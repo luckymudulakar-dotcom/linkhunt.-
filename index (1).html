@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LinkHunt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a3d;
+      --accent: #7c6bff;
+      --accent2: #ff6b9d;
+      --accent3: #6bffcb;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+      --card-bg: #13131e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,107,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,107,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 0;
+      animation: blobFloat 8s ease-in-out infinite;
+    }
+    .blob-1 { width: 500px; height: 500px; background: var(--accent); top: -150px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: var(--accent2); bottom: -100px; right: -100px; animation-delay: -4s; }
+    .blob-3 { width: 300px; height: 300px; background: var(--accent3); top: 40%; left: 60%; animation-delay: -2s; }
+
+    @keyframes blobFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(20px, -20px) scale(1.05); }
+      66% { transform: translate(-15px, 15px) scale(0.97); }
+    }
+
+    /* Layout */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 56px;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .logo-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 30px rgba(124,107,255,0.4);
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      margin-top: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124,107,255,0.1);
+      border: 1px solid rgba(124,107,255,0.3);
+      border-radius: 99px;
+      padding: 4px 14px;
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin-top: 16px;
+      letter-spacing: 0.08em;
+    }
+    .badge::before { content: '●'; font-size: 8px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* Card / Form */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.7s ease 0.1s both;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.5;
+    }
+
+    label {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      margin-top: 24px;
+    }
+    label:first-child { margin-top: 0; }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 14px 14px 42px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,107,255,0.15);
+    }
+    input[type="text"]::placeholder { color: var(--muted); }
+
+    .hint {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 7px;
+      opacity: 0.8;
+    }
+
+    /* Button */
+    .btn {
+      width: 100%;
+      margin-top: 28px;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent), #9b6bff);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124,107,255,0.4); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn .btn-inner { display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+    /* Spinner */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Status bar */
+    .status {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+      animation: fadeUp 0.3s ease;
+    }
+    .status.visible { display: flex; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s infinite; flex-shrink: 0; }
+
+    /* Results */
+    #results { animation: fadeUp 0.5s ease; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .results-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .count-badge {
+      background: rgba(107,255,203,0.1);
+      border: 1px solid rgba(107,255,203,0.3);
+      color: var(--accent3);
+      border-radius: 99px;
+      padding: 3px 12px;
+      font-size: 0.75rem;
+    }
+
+    /* AI Summary box */
+    .ai-summary {
+      background: linear-gradient(135deg, rgba(124,107,255,0.08), rgba(255,107,157,0.08));
+      border: 1px solid rgba(124,107,255,0.25);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .ai-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ai-label::before { content: '✦'; }
+    .ai-summary p {
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: #c8c8e0;
+    }
+
+    /* Link cards */
+    .link-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .link-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      cursor: pointer;
+      animation: fadeUp 0.4s ease both;
+    }
+    .link-card:hover {
+      border-color: var(--accent);
+      transform: translateX(4px);
+      box-shadow: -4px 0 20px rgba(124,107,255,0.15);
+    }
+
+    .link-num {
+      font-size: 0.7rem;
+      color: var(--muted);
+      min-width: 24px;
+      padding-top: 2px;
+      font-style: italic;
+    }
+
+    .link-content { flex: 1; min-width: 0; }
+
+    .link-url {
+      font-size: 0.82rem;
+      color: var(--accent);
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .link-keyword-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .kw-tag {
+      background: rgba(107,255,203,0.08);
+      border: 1px solid rgba(107,255,203,0.2);
+      color: var(--accent3);
+      border-radius: 4px;
+      padding: 1px 8px;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+    }
+
+    .link-arrow {
+      color: var(--muted);
+      font-size: 14px;
+      padding-top: 2px;
+      transition: color 0.2s, transform 0.2s;
+    }
+    .link-card:hover .link-arrow { color: var(--accent); transform: translateX(3px); }
+
+    /* Error */
+    .error-box {
+      background: rgba(255,107,107,0.08);
+      border: 1px solid rgba(255,107,107,0.3);
+      border-radius: 12px;
+      padding: 18px 22px;
+      color: #ff9090;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .error-box strong { display: block; margin-bottom: 6px; color: #ff6b6b; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+    .empty-state .big { font-size: 2.5rem; margin-bottom: 14px; }
+    .empty-state p { font-size: 0.85rem; line-height: 1.7; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      opacity: 0.6;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stagger link cards */
+    .link-card:nth-child(1)  { animation-delay: 0.05s; }
+    .link-card:nth-child(2)  { animation-delay: 0.10s; }
+    .link-card:nth-child(3)  { animation-delay: 0.15s; }
+    .link-card:nth-child(4)  { animation-delay: 0.20s; }
+    .link-card:nth-child(5)  { animation-delay: 0.25s; }
+    .link-card:nth-child(6)  { animation-delay: 0.30s; }
+    .link-card:nth-child(7)  { animation-delay: 0.35s; }
+    .link-card:nth-child(8)  { animation-delay: 0.40s; }
+    .link-card:nth-child(9)  { animation-delay: 0.45s; }
+    .link-card:nth-child(10) { animation-delay: 0.50s; }
+
+    @media (max-width: 600px) {
+      .wrapper { padding: 36px 16px 60px; }
+      .card { padding: 24px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="wrapper">
+
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">🔍</div>
+      <h1>LinkHunt</h1>
+    </div>
+    <p class="tagline">// fetch · filter · discover</p>
+    <div class="badge">AI-Powered Link Scanner</div>
+  </header>
+
+  <div class="card">
+    <label>Website URL</label>
+    <div class="input-wrap">
+      <span class="input-icon">🌐</span>
+      <input type="text" id="urlInput" placeholder="https://example.com" />
+    </div>
+    <p class="hint">Enter the full URL of the website you want to scan</p>
+
+    <label>Keywords</label>
+    <div class="input-wrap">
+      <span class="input-icon">🏷️</span>
+      <input type="text" id="keywordsInput" placeholder="python, tutorial, beginner" />
+    </div>
+    <p class="hint">Separate multiple keywords with a comma and space: keyword1, keyword2</p>
+
+    <button class="btn" id="huntBtn" onclick="hunt()">
+      <div class="btn-inner">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">🎯 Hunt Links</span>
+      </div>
+    </button>
+  </div>
+
+  <div class="status" id="status">
+    <div class="status-dot"></div>
+    <span id="statusText">Scanning website...</span>
+  </div>
+
+  <div id="results"></div>
+
+  <footer>LinkHunt &nbsp;·&nbsp; Zero budget. Maximum power. &nbsp;·&nbsp; Built with ♥</footer>
+
+</div>
+
+<script>
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 🔧 CONFIGURATION — UPDATE THIS AFTER STEP 2
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const WORKER_URL = "https://dark-shape-c52d.luckymudulakar.workers.dev/";
+  // Example: const WORKER_URL = "https://linkhunt.yourusername.workers.dev";
+
+  async function hunt() {
+    const url      = document.getElementById("urlInput").value.trim();
+    const keywords = document.getElementById("keywordsInput").value.trim();
+    const resultsEl = document.getElementById("results");
+
+    // — Validation —
+    if (!url) return showError("Please enter a website URL.");
+    if (!keywords) return showError("Please enter at least one keyword.");
+    if (!url.startsWith("http")) return showError("URL must start with http:// or https://");
+    if (WORKER_URL === "YOUR_CLOUDFLARE_WORKER_URL_HERE") {
+      return showError("⚙️ Setup needed: Open index.html and replace YOUR_CLOUDFLARE_WORKER_URL_HERE with your actual Cloudflare Worker URL. (Follow Step 2 of the guide!)");
+    }
+
+    setLoading(true);
+    setStatus("Connecting to LinkHunt backend...");
+    resultsEl.innerHTML = "";
+
+    try {
+      setStatus("Fetching & scanning the website for your keywords...");
+
+      const response = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, keywords })
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Backend error (${response.status}): ${err}`);
+      }
+
+      const data = await response.json();
+
+      setStatus("Asking AI to summarize results...");
+      renderResults(data, keywords);
+
+    } catch (err) {
+      showError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+      hideStatus();
+    }
+  }
+
+  function renderResults(data, keywords) {
+    const el = document.getElementById("results");
+    const links = data.links || [];
+    const summary = data.summary || "";
+
+    if (links.length === 0) {
+      el.innerHTML = `
+        <div class="empty-state">
+          <div class="big">🔭</div>
+          <p>No links found matching your keywords.<br/>Try different keywords or a different website.</p>
+        </div>`;
+      return;
+    }
+
+    const kwList = keywords.split(",").map(k => k.trim().toLowerCase()).filter(Boolean);
+
+    let html = `
+      <div class="results-header">
+        <span class="results-title">Results</span>
+        <span class="count-badge">${links.length} link${links.length !== 1 ? "s" : ""} found</span>
+      </div>`;
+
+    if (summary) {
+      html += `
+        <div class="ai-summary">
+          <div class="ai-label">AI Summary</div>
+          <p>${summary}</p>
+        </div>`;
+    }
+
+    html += `<div class="link-list">`;
+    links.forEach((link, i) => {
+      const matched = kwList.filter(kw => link.toLowerCase().includes(kw));
+      const tags = matched.map(kw => `<span class="kw-tag">${kw}</span>`).join("");
+      html += `
+        <a class="link-card" href="${link}" target="_blank" rel="noopener noreferrer">
+          <span class="link-num">${String(i + 1).padStart(2, "0")}</span>
+          <div class="link-content">
+            <div class="link-url">${link}</div>
+            ${tags ? `<div class="link-keyword-tags">${tags}</div>` : ""}
+          </div>
+          <span class="link-arrow">→</span>
+        </a>`;
+    });
+    html += `</div>`;
+
+    el.innerHTML = html;
+  }
+
+  function showError(msg) {
+    document.getElementById("results").innerHTML = `
+      <div class="error-box">
+        <strong>❌ Error</strong>
+        ${msg}
+      </div>`;
+    setLoading(false);
+    hideStatus();
+  }
+
+  function setLoading(on) {
+    const btn = document.getElementById("huntBtn");
+    const spinner = document.getElementById("spinner");
+    const btnText = document.getElementById("btnText");
+    btn.disabled = on;
+    spinner.style.display = on ? "block" : "none";
+    btnText.textContent = on ? "Hunting..." : "🎯 Hunt Links";
+  }
+
+  function setStatus(msg) {
+    const el = document.getElementById("status");
+    document.getElementById("statusText").textContent = msg;
+    el.classList.add("visible");
+  }
+
+  function hideStatus() {
+    document.getElementById("status").classList.remove("visible");
+  }
+
+  // Allow pressing Enter to search
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter") hunt();
+  });
+</script>
+</body>
+</html>
